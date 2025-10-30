@@ -15,6 +15,8 @@ import {
   Image,
   KeyboardAvoidingView,
   Modal,
+  Platform,
+  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -94,7 +96,7 @@ export default function PerfilScreen({ route }) {
 
   if (!fontsLoaded) {
     return (
-      <View style={[styles.loaderBox]}>
+      <View style={styles.loaderBox}>
         <Text style={{ fontFamily: 'Montserrat_400Regular', color: theme.colors.primary, fontSize: 18 }}>
           Carregando...
         </Text>
@@ -102,7 +104,6 @@ export default function PerfilScreen({ route }) {
     );
   }
 
-  // Atualizar usuário
   const atualizarConta = async () => {
     try {
       await api.put(`/usuarios/${usuario.id}`, {
@@ -118,167 +119,166 @@ export default function PerfilScreen({ route }) {
     }
   };
 
-  // Excluir conta com verificação de senha
-  const confirmarExclusao = () => {
-    setModalVisible(true);
-  };
+  const confirmarExclusao = () => setModalVisible(true);
 
   const excluirConta = async () => {
-    if (confirmSenha !== senha) {
-      Alert.alert('⚠️ Atenção', 'Senha incorreta. Tente novamente.');
-      return;
-    }
+  if (!confirmSenha) {
+    Alert.alert('⚠️ Atenção', 'Digite sua senha para confirmar.');
+    return;
+  }
 
-    try {
-      await api.delete(`/usuarios/${usuario.id}`);
-      Alert.alert('✅ Conta excluída', 'Sua conta foi removida com sucesso.');
-      setModalVisible(false);
-      navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
-    } catch (err) {
-      Alert.alert('❌ Erro', 'Não foi possível excluir a conta.');
-      console.log(err);
-    }
-  };
+  try {
+    await api.delete(`/usuarios/${usuario.id}`, {
+      data: { senha: confirmSenha },
+    });
 
+    Alert.alert('✅ Conta excluída', 'Sua conta foi removida com sucesso.');
+    setModalVisible(false);
+    navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+  } catch (err) {
+    console.error(err);
+    if (err.response?.status === 401) {
+      Alert.alert('❌ Senha incorreta', 'Tente novamente.');
+    } else {
+      Alert.alert('❌ Ah não!', 'Você possui agendamentos. Cancele-os antes de excluir sua conta.');
+    }
+  }
+};
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      <StatusBar backgroundColor={theme.colors.background} barStyle="dark-content" />
-      <KeyboardAvoidingView style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.scroll}>
-          <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.primaryDark }}>
+      {/* Barrinha azul topo */}
+      {Platform.OS === "android" && <View style={{ height: StatusBar.currentHeight, backgroundColor: theme.colors.primaryDark }} />}
+      <StatusBar backgroundColor={theme.colors.primaryDark} barStyle="light-content" />
 
-            {/* Logo */}
-            <View style={styles.logoBox}>
-              <Image
-                source={require("../../assets/images/login-illustration.png")}
-                style={styles.logoImage}
-                resizeMode="contain"
-              />
-            </View>
+      <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+        <KeyboardAvoidingView style={{ flex: 1 }}>
+          <ScrollView contentContainerStyle={styles.scroll}>
+            <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
+              {/* Logo */}
+              <View style={styles.logoBox}>
+                <Image
+                  source={require("../../assets/images/login-illustration.png")}
+                  style={styles.logoImage}
+                  resizeMode="contain"
+                />
+              </View>
 
-            <Text style={styles.title}>Meu Perfil</Text>
+              <Text style={styles.title}>Editar Perfil</Text>
 
-            {/* Nome */}
-            <View style={styles.inputBox}>
-              <Text style={styles.label}>Nome:</Text>
+              <View style={styles.inputBox}>
+                <Text style={styles.label}>Nome:</Text>
+                <TextInput
+                  style={styles.input}
+                  value={nome}
+                  onChangeText={setNome}
+                  placeholder="Digite seu nome"
+                  placeholderTextColor={theme.colors.placeholder}
+                />
+              </View>
+
+          
+              <View style={styles.inputBox}>
+                <Text style={styles.label}>CPF:</Text>
+                <TextInput
+                  style={styles.input}
+                  value={cpf}
+                  onChangeText={(text) => setCpf(formatarCPF(text))}
+                  placeholder="Digite seu CPF"
+                  placeholderTextColor={theme.colors.placeholder}
+                  keyboardType="numeric"
+                />
+              </View>
+
+              
+              <View style={styles.inputBox}>
+                <Text style={styles.label}>Telefone:</Text>
+                <TextInput
+                  style={styles.input}
+                  value={telefone}
+                  onChangeText={(text) => setTelefone(formatarTelefone(text))}
+                  placeholder="(00) 00000-0000"
+                  placeholderTextColor={theme.colors.placeholder}
+                  keyboardType="phone-pad"
+                />
+              </View>
+
+              
+              <View style={styles.inputBox}>
+                <Text style={styles.label}>Senha:</Text>
+                <TextInput
+                  style={styles.input}
+                  value={senha}
+                  onChangeText={setSenha}
+                  placeholder="Digite sua senha"
+                  placeholderTextColor={theme.colors.placeholder}
+                  secureTextEntry
+                />
+              </View>
+
+          
+              <TouchableOpacity style={styles.updateButton} onPress={atualizarConta}>
+                <LinearGradient colors={[theme.colors.primaryDark, theme.colors.primary]} style={styles.buttonGradient}>
+                  <Text style={styles.buttonText}>Atualizar Conta</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+
+              
+              <TouchableOpacity style={styles.deleteButton} onPress={confirmarExclusao}>
+                <LinearGradient colors={[theme.colors.deleteGradientStart, theme.colors.deleteGradientEnd]} style={styles.buttonGradient}>
+                  <Text style={styles.buttonText}>Excluir Conta</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+
+              {/* Voltar */}
+              <TouchableOpacity
+                style={styles.backBtn}
+                onPress={() => navigation.navigate('Home', { usuario })}
+              >
+                <Ionicons name="arrow-back" size={20} color={theme.colors.backBtn} style={{ marginRight: 6 }} />
+                <Text style={styles.backBtnText}>Voltar</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+
+        {/* Modal de confirmação de exclusão */}
+        <Modal visible={modalVisible} transparent animationType="fade">
+          <View style={styles.modalContainer}>
+            <View style={styles.modalBox}>
+              <Text style={styles.modalTitle}>Confirme sua senha</Text>
               <TextInput
-                style={styles.input}
-                value={nome}
-                onChangeText={setNome}
-                placeholder="Digite seu nome"
-                placeholderTextColor={theme.colors.placeholder}
-              />
-            </View>
-
-            {/* CPF */}
-            <View style={styles.inputBox}>
-              <Text style={styles.label}>CPF:</Text>
-              <TextInput
-                style={styles.input}
-                value={cpf}
-                onChangeText={(text) => setCpf(formatarCPF(text))}
-                placeholder="Digite seu CPF"
-                placeholderTextColor={theme.colors.placeholder}
-                keyboardType="numeric"
-              />
-            </View>
-
-            {/* Telefone */}
-            <View style={styles.inputBox}>
-              <Text style={styles.label}>Telefone:</Text>
-              <TextInput
-                style={styles.input}
-                value={telefone}
-                onChangeText={(text) => setTelefone(formatarTelefone(text))}
-                placeholder="(00) 00000-0000"
-                placeholderTextColor={theme.colors.placeholder}
-                keyboardType="phone-pad"
-              />
-            </View>
-
-            {/* Senha */}
-            <View style={styles.inputBox}>
-              <Text style={styles.label}>Senha:</Text>
-              <TextInput
-                style={styles.input}
-                value={senha}
-                onChangeText={setSenha}
+                style={styles.modalInput}
                 placeholder="Digite sua senha"
                 placeholderTextColor={theme.colors.placeholder}
                 secureTextEntry
+                value={confirmSenha}
+                onChangeText={setConfirmSenha}
               />
-            </View>
-
-            {/* Botão atualizar */}
-            <TouchableOpacity style={styles.updateButton} onPress={atualizarConta}>
-              <LinearGradient colors={[theme.colors.primaryDark, theme.colors.primary]} style={styles.buttonGradient}>
-                <Text style={styles.buttonText}>Atualizar Conta</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-
-            {/* Botão excluir */}
-            <TouchableOpacity style={styles.deleteButton} onPress={confirmarExclusao}>
-              <LinearGradient colors={[theme.colors.deleteGradientStart, theme.colors.deleteGradientEnd]} style={styles.buttonGradient}>
-                <Text style={styles.buttonText}>Excluir Conta</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-
-            {/* Voltar */}
-            <TouchableOpacity
-              style={styles.backBtn}
-              onPress={() => navigation.navigate('Home', { usuario })}
-            >
-              <Ionicons name="arrow-back" size={20} color={theme.colors.backBtn} style={{ marginRight: 6 }} />
-              <Text style={styles.backBtnText}>Voltar</Text>
-            </TouchableOpacity>
-          </Animated.View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-
-      {/* Modal de confirmação de exclusão */}
-      <Modal visible={modalVisible} transparent animationType="fade">
-        <View style={styles.modalContainer}>
-          <View style={styles.modalBox}>
-            <Text style={styles.modalTitle}>Confirme sua senha</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Digite sua senha"
-              placeholderTextColor={theme.colors.placeholder}
-              secureTextEntry
-              value={confirmSenha}
-              onChangeText={setConfirmSenha}
-            />
-            <View style={styles.modalBtns}>
-              <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelBtn}>
-                <Text style={styles.cancelText}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={excluirConta} style={styles.confirmBtn}>
-                <Text style={styles.confirmText}>Confirmar</Text>
-              </TouchableOpacity>
+              <View style={styles.modalBtns}>
+                <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.cancelBtn}>
+                  <Text style={styles.cancelText}>Cancelar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={excluirConta} style={styles.confirmBtn}>
+                  <Text style={styles.confirmText}>Confirmar</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
-    </View>
+        </Modal>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  loaderBox: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  scroll: { padding: 20, paddingBottom: 40 },
+  loaderBox: { flex: 1, justifyContent: "center", alignItems: "center" },
   card: {
     width: width * 0.92,
     maxWidth: 400,
     backgroundColor: theme.colors.card,
     borderRadius: theme.radius.lg,
-    paddingVertical: 38,
+    paddingVertical: 5,
     paddingHorizontal: 28,
     alignItems: "stretch",
     shadowColor: "#000",
@@ -289,133 +289,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
-  logoBox: {
-    alignItems: "center",
-    marginBottom: 18,
-  },
-  logoImage: {
-    width: 110,
-    height: 110,
-  },
-  title: {
-    fontFamily: "Montserrat_700Bold",
-    fontSize: 26,
-    color: theme.colors.primaryDark,
-    textAlign: "center",
-    marginBottom: 24,
-  },
-  inputBox: {
-    marginBottom: 16,
-  },
-  label: {
-    fontFamily: "Montserrat_600SemiBold",
-    fontSize: 16,
-    color: theme.colors.primaryDark,
-    marginBottom: 6,
-  },
-  input: {
-    fontFamily: "Montserrat_400Regular",
-    fontSize: 16,
-    color: theme.colors.text,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.sm,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    backgroundColor: theme.colors.card,
-  },
-  updateButton: {
-    marginTop: 20,
-    borderRadius: theme.radius.md,
-    overflow: "hidden",
-  },
-  deleteButton: {
-    marginTop: 12,
-    borderRadius: theme.radius.md,
-    overflow: "hidden",
-  },
-  buttonGradient: {
-    paddingVertical: 16,
-    alignItems: "center",
-    borderRadius: theme.radius.md,
-  },
-  buttonText: {
-    fontFamily: "Montserrat_600SemiBold",
-    color: "#fff",
-    fontSize: 18,
-  },
-  backBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "center",
-    marginTop: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    borderRadius: theme.radius.md,
-    backgroundColor: theme.colors.card,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  backBtnText: {
-    fontFamily: "Montserrat_600SemiBold",
-    color: theme.colors.backBtn,
-    fontSize: 16,
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalBox: {
-    width: '85%',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    alignItems: 'center',
-  },
-  modalTitle: {
-    fontFamily: 'Montserrat_700Bold',
-    fontSize: 18,
-    color: theme.colors.primaryDark,
-    marginBottom: 14,
-  },
-  modalInput: {
-    width: '100%',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    marginBottom: 20,
-  },
-  modalBtns: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  cancelBtn: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: theme.colors.primary,
-    alignItems: 'center',
-    marginRight: 10,
-  },
-  confirmBtn: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 10,
-    backgroundColor: theme.colors.primary,
-    alignItems: 'center',
-  },
-  cancelText: {
-    color: theme.colors.primary,
-    fontFamily: 'Montserrat_600SemiBold',
-  },
-  confirmText: {
-    color: '#fff',
-    fontFamily: 'Montserrat_600SemiBold',
-  },
+  logoBox: { alignItems: "center", marginBottom: 18 },
+  logoImage: { width: 110, height: 110 },
+  title: { fontFamily: "Montserrat_700Bold", fontSize: 26, color: theme.colors.primaryDark, textAlign: "center", marginBottom: 24 },
+  inputBox: { marginBottom: 16 },
+  label: { fontFamily: "Montserrat_600SemiBold", fontSize: 16, color: theme.colors.primaryDark, marginBottom: 6 },
+  input: { fontFamily: "Montserrat_400Regular", fontSize: 16, color: theme.colors.text, borderWidth: 1, borderColor: theme.colors.border, borderRadius: theme.radius.sm, paddingVertical: 10, paddingHorizontal: 12, backgroundColor: theme.colors.card },
+  updateButton: { marginTop: 20, borderRadius: theme.radius.md, overflow: "hidden" },
+  deleteButton: { marginTop: 12, borderRadius: theme.radius.md, overflow: "hidden" },
+  buttonGradient: { paddingVertical: 16, alignItems: "center", borderRadius: theme.radius.md },
+  buttonText: { fontFamily: "Montserrat_600SemiBold", color: "#fff", fontSize: 18 },
+  backBtn: { flexDirection: "row", alignItems: "center", alignSelf: "center", marginTop: 20, paddingVertical: 10, paddingHorizontal: 18, borderRadius: theme.radius.md, backgroundColor: theme.colors.card, borderWidth: 1, borderColor: theme.colors.border },
+  backBtnText: { fontFamily: "Montserrat_600SemiBold", color: theme.colors.backBtn, fontSize: 16 },
+  modalContainer: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center' },
+  modalBox: { width: '85%', backgroundColor: '#fff', borderRadius: 16, padding: 20, alignItems: 'center' },
+  modalTitle: { fontFamily: 'Montserrat_700Bold', fontSize: 18, color: theme.colors.primaryDark, marginBottom: 14 },
+  modalInput: { width: '100%', borderWidth: 1, borderColor: theme.colors.border, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 12, marginBottom: 20 },
+  modalBtns: { flexDirection: 'row', justifyContent: 'space-between', width: '100%' },
+  cancelBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, borderWidth: 1, borderColor: theme.colors.primary, alignItems: 'center', marginRight: 10 },
+  confirmBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: theme.colors.primary, alignItems: 'center' },
+  cancelText: { color: theme.colors.primary, fontFamily: 'Montserrat_600SemiBold' },
+  confirmText: { color: '#fff', fontFamily: 'Montserrat_600SemiBold' },
 });

@@ -13,6 +13,7 @@ import {
   Animated,
   Dimensions,
   Platform,
+  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -82,7 +83,6 @@ export default function AgendarConsultaScreen({ route, navigation }) {
     }
 
     try {
-      // envia a data em UTC ISO string para backend (corrige timezone)
       const dataUtcString = data.toISOString();
 
       await api.post('/consultas', {
@@ -121,104 +121,110 @@ export default function AgendarConsultaScreen({ route, navigation }) {
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar backgroundColor="#0D47A1" barStyle="light-content" />
-      <ScrollView contentContainerStyle={styles.scroll}>
-        <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
-          <Text style={styles.title}>Agendar Consulta</Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#0B3D91' }}>
+      {Platform.OS === 'android' && (
+        <View style={{ height: StatusBar.currentHeight, backgroundColor: '#0B3D91' }} />
+      )}
+      <StatusBar backgroundColor="#0B3D91" barStyle="light-content" translucent={false} />
 
-          <Text style={styles.label}>Especialidade</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={especialidadeSelecionada}
-              onValueChange={(itemValue) => setEspecialidadeSelecionada(itemValue)}
-              style={styles.picker}
+      <View style={styles.container}>
+        <ScrollView contentContainerStyle={styles.scroll}>
+          <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
+            <Text style={styles.title}>Agendar Consulta</Text>
+
+            <Text style={styles.label}>Especialidade</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={especialidadeSelecionada}
+                onValueChange={(itemValue) => setEspecialidadeSelecionada(itemValue)}
+                style={styles.picker}
+              >
+                <Picker.Item label="Selecione..." value="" />
+                {especialidades.map((esp) => (
+                  <Picker.Item key={esp.id} label={esp.nome} value={esp.id} />
+                ))}
+              </Picker>
+            </View>
+
+            <Text style={styles.label}>Profissional</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={medicoSelecionado}
+                onValueChange={(itemValue) => setMedicoSelecionado(itemValue)}
+                enabled={medicos.length > 0}
+                style={styles.picker}
+              >
+                <Picker.Item label="Selecione..." value="" />
+                {medicos.map((med) => (
+                  <Picker.Item key={med.id} label={med.nome} value={med.id} />
+                ))}
+              </Picker>
+            </View>
+
+            <TouchableOpacity onPress={() => setMostrarDataPicker(true)} style={styles.infoCard}>
+              <Ionicons name="calendar-outline" size={24} color="#1976D2" />
+              <Text style={styles.infoLabel}>Data</Text>
+              <Text style={styles.infoValue}>{formatarData(data)}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => setMostrarHoraPicker(true)} style={styles.infoCard}>
+              <Ionicons name="time-outline" size={24} color="#1976D2" />
+              <Text style={styles.infoLabel}>Hora</Text>
+              <Text style={styles.infoValue}>{formatarHora(data)}</Text>
+            </TouchableOpacity>
+
+            {mostrarDataPicker && (
+              <DateTimePicker
+                value={data}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={(event, selectedDate) => {
+                  setMostrarDataPicker(false);
+                  if (selectedDate) {
+                    const novaData = new Date(data);
+                    novaData.setFullYear(selectedDate.getFullYear());
+                    novaData.setMonth(selectedDate.getMonth());
+                    novaData.setDate(selectedDate.getDate());
+                    setData(novaData);
+                  }
+                }}
+              />
+            )}
+
+            {mostrarHoraPicker && (
+              <DateTimePicker
+                value={data}
+                mode="time"
+                is24Hour
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={(event, selectedTime) => {
+                  setMostrarHoraPicker(false);
+                  if (selectedTime) {
+                    const novaData = new Date(data);
+                    novaData.setHours(selectedTime.getHours());
+                    novaData.setMinutes(selectedTime.getMinutes());
+                    setData(novaData);
+                  }
+                }}
+              />
+            )}
+
+            <TouchableOpacity style={styles.confirmBtn} onPress={agendar}>
+              <Ionicons name="checkmark-circle-outline" size={22} color="#fff" />
+              <Text style={styles.confirmText}>Confirmar Agendamento</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.backBtn}
+              onPress={() => navigation.navigate('Home', { usuario })}
             >
-              <Picker.Item label="Selecione..." value="" />
-              {especialidades.map((esp) => (
-                <Picker.Item key={esp.id} label={esp.nome} value={esp.id} />
-              ))}
-            </Picker>
-          </View>
-
-          <Text style={styles.label}>Profissional</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={medicoSelecionado}
-              onValueChange={(itemValue) => setMedicoSelecionado(itemValue)}
-              enabled={medicos.length > 0}
-              style={styles.picker}
-            >
-              <Picker.Item label="Selecione..." value="" />
-              {medicos.map((med) => (
-                <Picker.Item key={med.id} label={med.nome} value={med.id} />
-              ))}
-            </Picker>
-          </View>
-
-          <TouchableOpacity onPress={() => setMostrarDataPicker(true)} style={styles.infoCard}>
-            <Ionicons name="calendar-outline" size={24} color="#1976D2" />
-            <Text style={styles.infoLabel}>Data</Text>
-            <Text style={styles.infoValue}>{formatarData(data)}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => setMostrarHoraPicker(true)} style={styles.infoCard}>
-            <Ionicons name="time-outline" size={24} color="#1976D2" />
-            <Text style={styles.infoLabel}>Hora</Text>
-            <Text style={styles.infoValue}>{formatarHora(data)}</Text>
-          </TouchableOpacity>
-
-          {mostrarDataPicker && (
-            <DateTimePicker
-              value={data}
-              mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={(event, selectedDate) => {
-                setMostrarDataPicker(false);
-                if (selectedDate) {
-                  const novaData = new Date(data);
-                  novaData.setFullYear(selectedDate.getFullYear());
-                  novaData.setMonth(selectedDate.getMonth());
-                  novaData.setDate(selectedDate.getDate());
-                  setData(novaData);
-                }
-              }}
-            />
-          )}
-
-          {mostrarHoraPicker && (
-            <DateTimePicker
-              value={data}
-              mode="time"
-              is24Hour
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={(event, selectedTime) => {
-                setMostrarHoraPicker(false);
-                if (selectedTime) {
-                  const novaData = new Date(data);
-                  novaData.setHours(selectedTime.getHours());
-                  novaData.setMinutes(selectedTime.getMinutes());
-                  setData(novaData);
-                }
-              }}
-            />
-          )}
-
-          <TouchableOpacity style={styles.confirmBtn} onPress={agendar}>
-            <Ionicons name="checkmark-circle-outline" size={22} color="#fff" />
-            <Text style={styles.confirmText}>Confirmar Agendamento</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.backBtn}
-            onPress={() => navigation.navigate('Home', { usuario })}
-          >
-            <Ionicons name="arrow-back" size={20} color="#1976D2" />
-            <Text style={styles.backText}>Voltar</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      </ScrollView>
-    </View>
+              <Ionicons name="arrow-back" size={20} color="#1976D2" />
+              <Text style={styles.backText}>Voltar</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -238,7 +244,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 3,
   },
-  title: { fontFamily: 'Montserrat_700Bold', fontSize: 24, color: '#0D47A1', textAlign: 'center', marginBottom: 20 },
+  title: { fontFamily: 'Montserrat_700Bold', fontSize: 24, color: '#0B3D91', textAlign: 'center', marginBottom: 20 },
   label: { fontFamily: 'Montserrat_600SemiBold', color: '#000', fontSize: 15, marginBottom: 6 },
   pickerContainer: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, marginBottom: 14 },
   picker: { color: '#000' },
@@ -252,9 +258,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   infoLabel: { fontFamily: 'Montserrat_600SemiBold', color: '#000', fontSize: 15 },
-  infoValue: { fontFamily: 'Montserrat_700Bold', color: '#0D47A1', fontSize: 16 },
+  infoValue: { fontFamily: 'Montserrat_700Bold', color: '#0B3D91', fontSize: 16 },
   confirmBtn: {
-    backgroundColor: '#0D47A1',
+    backgroundColor: '#0B3D91',
     borderRadius: 8,
     paddingVertical: 14,
     marginTop: 18,

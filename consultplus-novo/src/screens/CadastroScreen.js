@@ -1,4 +1,3 @@
-// consultplus-novo/src/screens/CadastroScreen.js
 import { useFonts } from "@expo-google-fonts/montserrat";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -7,6 +6,8 @@ import {
   Animated,
   Dimensions,
   Image,
+  Platform,
+  SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
@@ -72,76 +73,93 @@ export default function CadastroScreen() {
   }
 
   return (
-    <View style={styles.bg}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
-      <KeyboardAwareScrollView
-        contentContainerStyle={styles.scroll}
-        enableOnAndroid
-        enableAutomaticScroll
-        showsVerticalScrollIndicator={false}
-      >
-        <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
-          {/* Logo */}
-          <View style={styles.logoBox}>
-            <Image
-              source={require("../../assets/images/login-illustration.png")}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
-          </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }}>
+      {/* Espaço para StatusBar no Android */}
+      {Platform.OS === "android" && (
+        <View style={{ height: StatusBar.currentHeight, backgroundColor: Colors.background }} />
+      )}
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor={Colors.background}
+        translucent={false}
+      />
 
-          <Text style={styles.title}>Cadastro</Text>
-          <Text style={styles.subtitle}>Preencha seus dados para criar a conta</Text>
+      <View style={styles.bg}>
+        <KeyboardAwareScrollView
+          contentContainerStyle={styles.scroll}
+          enableOnAndroid
+          enableAutomaticScroll
+          showsVerticalScrollIndicator={false}
+        >
+          <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
+            {/* Logo */}
+            <View style={styles.logoBox}>
+              <Image
+                source={require("../../assets/images/login-illustration.png")}
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
+            </View>
 
-          {/* Nome */}
-          <View style={styles.inputBox}>
-            <InputPadronizado
-              value={nome}
-              onChangeText={setNome}
-              placeholder="Nome completo"
-              autoCapitalize="words"
-            />
-          </View>
+            <Text style={styles.title}>Cadastro</Text>
+            <Text style={styles.subtitle}>Preencha seus dados para criar a conta</Text>
 
-          {/* CPF */}
-          <View style={styles.inputBox}>
-            <InputPadronizado value={cpf} onChangeText={setCpf} placeholder="CPF" mask="cpf" />
-          </View>
+            {/* Nome */}
+            <View style={styles.inputBox}>
+              <InputPadronizado
+                value={nome}
+                onChangeText={setNome}
+                placeholder="Nome completo"
+                autoCapitalize="words"
+              />
+            </View>
 
-          {/* Celular */}
-          <View style={styles.inputBox}>
-            <InputPadronizado
-              value={telefone}
-              onChangeText={setTelefone}
-              placeholder="Celular"
-              mask="telefone"
-              keyboardType="phone-pad"
-            />
-          </View>
+            {/* CPF */}
+            <View style={styles.inputBox}>
+              <InputPadronizado value={cpf} onChangeText={setCpf} placeholder="CPF" mask="cpf" />
+            </View>
 
-          {/* Data de Nascimento */}
-          <View style={styles.inputBox}>
-            <InputPadronizado value={dataNascimento} onChangeText={setDataNascimento} placeholder="Data de Nascimento" mask="data" keyboardType="numeric" />
-          </View>
+            {/* Celular */}
+            <View style={styles.inputBox}>
+              <InputPadronizado
+                value={telefone}
+                onChangeText={setTelefone}
+                placeholder="Celular"
+                mask="telefone"
+                keyboardType="phone-pad"
+              />
+            </View>
 
-          {/* Senha */}
-          <View style={styles.inputBox}>
-            <InputPadronizado value={senha} onChangeText={setSenha} placeholder="Senha" secureTextEntry />
-          </View>
+            {/* Data de Nascimento */}
+            <View style={styles.inputBox}>
+              <InputPadronizado
+                value={dataNascimento}
+                onChangeText={setDataNascimento}
+                placeholder="Data de Nascimento"
+                mask="data"
+                keyboardType="numeric"
+              />
+            </View>
 
-          {/* Botão Cadastrar */}
-          <TouchableOpacity style={styles.button} onPress={cadastrar} activeOpacity={0.9}>
-            <Text style={styles.buttonText}>Cadastrar</Text>
-          </TouchableOpacity>
+            {/* Senha */}
+            <View style={styles.inputBox}>
+              <InputPadronizado value={senha} onChangeText={setSenha} placeholder="Senha" secureTextEntry />
+            </View>
 
-          {/* Voltar */}
-          <TouchableOpacity style={styles.backBtn} activeOpacity={0.8} onPress={() => navigation.navigate("Login")}>
-            <Ionicons name="arrow-back" size={20} color={Colors.primary} style={{ marginRight: 5 }} />
-            <Text style={styles.backBtnText}>Voltar ao Login</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      </KeyboardAwareScrollView>
-    </View>
+            {/* Botão Cadastrar */}
+            <TouchableOpacity style={styles.button} onPress={cadastrar} activeOpacity={0.9}>
+              <Text style={styles.buttonText}>Cadastrar</Text>
+            </TouchableOpacity>
+
+            {/* Voltar */}
+            <TouchableOpacity style={styles.backBtn} activeOpacity={0.8} onPress={() => navigation.navigate("Login")}>
+              <Ionicons name="arrow-back" size={20} color={Colors.primary} style={{ marginRight: 5 }} />
+              <Text style={styles.backBtnText}>Voltar ao Login</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </KeyboardAwareScrollView>
+      </View>
+    </SafeAreaView>
   );
 }
 

@@ -11,6 +11,8 @@ import {
   Animated,
   Dimensions,
   Image,
+  Platform,
+  SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
@@ -61,62 +63,69 @@ export default function HomeScreen({ route, navigation }) {
   }
 
   return (
-    <View style={styles.bg}>
-      <StatusBar backgroundColor="#0D47A1" barStyle="light-content" />
-      <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
-        <View style={styles.headerArea}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Image
-              source={require("../../assets/images/login-illustration.png")}
-              style={styles.logoImage}
-              resizeMode="contain"
-            />
-            <Text style={styles.logoText}>ConsultPlus</Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#0B3D91" }}>
+      {/* Espaço para StatusBar no Android */}
+      {Platform.OS === "android" && (
+        <View style={{ height: StatusBar.currentHeight, backgroundColor: "#0B3D91" }} />
+      )}
+      <StatusBar backgroundColor="#0B3D91" barStyle="light-content" translucent={false} />
+
+      <View style={styles.bg}>
+        <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
+          <View style={styles.headerArea}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Image
+                source={require("../../assets/images/login-illustration.png")}
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
+              <Text style={styles.logoText}>ConsultPlus</Text>
+            </View>
+
+            <TouchableOpacity
+              onPress={() =>
+                navigation.reset({ index: 0, routes: [{ name: "Login" }] })
+              }
+            >
+              <MaterialIcons name="logout" size={30} color="#D32F2F" />
+            </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            onPress={() => navigation.reset({ index: 0, routes: [{ name: "Login" }] })}
-          >
-            <MaterialIcons name="logout" size={30} color="#D32F2F" />
-          </TouchableOpacity>
-        </View>
+          <Text style={styles.saudacao}>Bem-vindo,</Text>
+          <Text style={styles.nome}>{usuario?.nome?.trim() || "Usuário"}</Text>
 
-      
-        <Text style={styles.saudacao}>Bem-vindo,</Text>
-        <Text style={styles.nome}>{usuario?.nome?.trim() || "Usuário"}</Text>
+          <View style={styles.row}>
+            <HomeButton
+              icon="calendar-outline"
+              label="Agendar Consulta"
+              color="#1976D2"
+              onPress={() => navigation.navigate("AgendarConsulta", { usuario })}
+            />
+            <HomeButton
+              icon="time-outline"
+              label="Agendamentos"
+              color="#0288D1"
+              onPress={() => navigation.navigate("HistoricoConsultas", { usuario })}
+            />
+          </View>
 
-   
-        <View style={styles.row}>
-          <HomeButton
-            icon="calendar-outline"
-            label="Agendar Consulta"
-            color="#1976D2"
-            onPress={() => navigation.navigate("AgendarConsulta", { usuario })}
-          />
-          <HomeButton
-            icon="time-outline"
-            label="Agendamentos"
-            color="#0288D1"
-            onPress={() => navigation.navigate("HistoricoConsultas", { usuario })}
-          />
-        </View>
-
-        <View style={styles.row}>
-          <HomeButton
-            icon="person-circle-outline"
-            label="Editar Perfil"
-            color="#388E3C"
-            onPress={() => navigation.navigate("Perfil", { usuario })}
-          />
-          <HomeButton
-            icon="location-outline"
-            label="UBS Próximas"
-            color="#FBC02D"
-            onPress={() => navigation.navigate("UbsProximas", { usuario })}
-          />
-        </View>
-      </Animated.View>
-    </View>
+          <View style={styles.row}>
+            <HomeButton
+              icon="person-circle-outline"
+              label="Editar Perfil"
+              color="#388E3C"
+              onPress={() => navigation.navigate("Perfil", { usuario })}
+            />
+            <HomeButton
+              icon="location-outline"
+              label="UBS Próximas"
+              color="#FBC02D"
+              onPress={() => navigation.navigate("UbsProximas", { usuario })}
+            />
+          </View>
+        </Animated.View>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -176,7 +185,7 @@ const styles = StyleSheet.create({
   },
   logoText: {
     fontFamily: "Montserrat_700Bold",
-    color: "#0D47A1",
+    color: "#0B3D91",
     fontSize: 22,
     letterSpacing: 0.8,
   },
@@ -188,7 +197,7 @@ const styles = StyleSheet.create({
   nome: {
     fontFamily: "Montserrat_700Bold",
     fontSize: 23,
-    color: "#0D47A1",
+    color: "#0B3D91",
     marginBottom: 24,
   },
   row: {

@@ -12,6 +12,8 @@ import {
   Animated,
   Dimensions,
   Image,
+  Platform,
+  SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
@@ -28,15 +30,15 @@ const { width } = Dimensions.get("window");
 // --- 🎨 Design Tokens (e-SUS APS/PEC) ---
 const theme = {
   colors: {
-    primaryDark: "#0B3D91", // azul escuro oficial
-    primary: "#1976D2",     // azul médio oficial
+    primaryDark: "#0B3D91",
+    primary: "#1976D2",
     card: "#FFFFFF",
-    background: "#F7F7F7", // cinza claríssimo
+    background: "#F7F7F7",
     text: "#000000",
     placeholder: "#757575",
     border: "#DCE6F1",
-    personIcon: "#1976D2",   // azul
-    lockIcon: "#F57C00",     // laranja
+    personIcon: "#1976D2",
+    lockIcon: "#F57C00",
   },
   fonts: {
     regular: "Montserrat_400Regular",
@@ -116,95 +118,105 @@ export default function LoginScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar backgroundColor={theme.colors.primaryDark} barStyle="light-content" />
-      <KeyboardAwareScrollView
-        contentContainerStyle={styles.scroll}
-        showsVerticalScrollIndicator={false}
-        enableOnAndroid
-        keyboardShouldPersistTaps="handled"
-        extraScrollHeight={30}
-      >
-        <Animated.View
-          style={[
-            styles.card,
-            { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
-          ]}
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      {/* Espaço para StatusBar no Android */}
+      {Platform.OS === "android" && (
+        <View style={{ height: StatusBar.currentHeight, backgroundColor: theme.colors.primaryDark }} />
+      )}
+      <StatusBar
+        backgroundColor={theme.colors.primaryDark}
+        barStyle="light-content"
+        translucent={false}
+      />
+      <View style={styles.container}>
+        <KeyboardAwareScrollView
+          contentContainerStyle={styles.scroll}
+          showsVerticalScrollIndicator={false}
+          enableOnAndroid
+          keyboardShouldPersistTaps="handled"
+          extraScrollHeight={30}
         >
-          {/* LOGO */}
-          <View style={styles.logoBox}>
-            <Image
-              source={require("../../assets/images/login-illustration.png")}
-              style={styles.image}
-              resizeMode="contain"
-            />
-          </View>
-
-          {/* Título */}
-          <Text style={styles.title}>
-            <Text style={{ color: theme.colors.primary }}>Consult</Text>
-            <Text style={{ color: theme.colors.primaryDark }}>Plus</Text>
-          </Text>
-          <Text style={styles.subtitle}>Inovação que cuida.</Text>
-
-          {/* Campo CPF */}
-          <View style={styles.inputBox}>
-            <Ionicons
-              name="person-outline"
-              size={22}
-              color={theme.colors.personIcon}
-              style={styles.icon}
-            />
-            <MaskInput
-              value={cpf}
-              onChangeText={setCpf}
-              mask={Masks.BRL_CPF}
-              placeholder="Digite seu CPF"
-              keyboardType="numeric"
-              style={styles.input}
-              placeholderTextColor={theme.colors.placeholder}
-            />
-          </View>
-
-          {/* Campo Senha */}
-          <View style={styles.inputBox}>
-            <Ionicons
-              name="lock-closed-outline"
-              size={22}
-              color={theme.colors.lockIcon}
-              style={styles.icon}
-            />
-            <TextInput
-              placeholder="Digite sua senha"
-              secureTextEntry
-              value={senha}
-              onChangeText={setSenha}
-              style={styles.input}
-              placeholderTextColor={theme.colors.placeholder}
-            />
-          </View>
-
-          {/* Botão */}
-          <TouchableOpacity
-            style={styles.buttonWrapper}
-            onPress={login}
-            activeOpacity={0.9}
+          <Animated.View
+            style={[
+              styles.card,
+              { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
+            ]}
           >
-            <View style={styles.button}>
-              <Text style={styles.buttonText}>Entrar</Text>
+            {/* LOGO */}
+            <View style={styles.logoBox}>
+              <Image
+                source={require("../../assets/images/login-illustration.png")}
+                style={styles.image}
+                resizeMode="contain"
+              />
             </View>
-          </TouchableOpacity>
 
-          {/* Link de cadastro */}
-          <TouchableOpacity
-            onPress={() => navigation.navigate("Cadastro")}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.link}>Criar conta</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      </KeyboardAwareScrollView>
-    </View>
+            {/* Título */}
+            <Text style={styles.title}>
+              <Text style={{ color: theme.colors.primary }}>Consult</Text>
+              <Text style={{ color: theme.colors.primaryDark }}>Plus</Text>
+            </Text>
+            <Text style={styles.subtitle}>Inovação que cuida.</Text>
+
+            {/* Campo CPF */}
+            <View style={styles.inputBox}>
+              <Ionicons
+                name="person-outline"
+                size={22}
+                color={theme.colors.personIcon}
+                style={styles.icon}
+              />
+              <MaskInput
+                value={cpf}
+                onChangeText={setCpf}
+                mask={Masks.BRL_CPF}
+                placeholder="Digite seu CPF"
+                keyboardType="numeric"
+                style={styles.input}
+                placeholderTextColor={theme.colors.placeholder}
+              />
+            </View>
+
+            {/* Campo Senha */}
+            <View style={styles.inputBox}>
+              <Ionicons
+                name="lock-closed-outline"
+                size={22}
+                color={theme.colors.lockIcon}
+                style={styles.icon}
+              />
+              <TextInput
+                placeholder="Digite sua senha"
+                secureTextEntry
+                value={senha}
+                onChangeText={setSenha}
+                style={styles.input}
+                placeholderTextColor={theme.colors.placeholder}
+              />
+            </View>
+
+            {/* Botão */}
+            <TouchableOpacity
+              style={styles.buttonWrapper}
+              onPress={login}
+              activeOpacity={0.9}
+            >
+              <View style={styles.button}>
+                <Text style={styles.buttonText}>Entrar</Text>
+              </View>
+            </TouchableOpacity>
+
+            {/* Link de cadastro */}
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Cadastro")}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.link}>Criar conta</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </KeyboardAwareScrollView>
+      </View>
+    </SafeAreaView>
   );
 }
 

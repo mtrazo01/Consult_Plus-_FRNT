@@ -13,6 +13,8 @@ import {
   Animated,
   Dimensions,
   FlatList,
+  Platform,
+  SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
@@ -84,7 +86,7 @@ export default function HistoricoScreen() {
   }, [usuarioId]);
 
   const renderItem = ({ item }) => {
-    const dataLocal = new Date(item.data_hora); // interpreta string ISO UTC
+    const dataLocal = new Date(item.data_hora);
 
     return (
       <Animated.View style={[styles.cardConsulta, { opacity: fadeAnim }]}>
@@ -148,38 +150,44 @@ export default function HistoricoScreen() {
   }
 
   return (
-    <View style={styles.bg}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.primaryDark }}>
+      {Platform.OS === "android" && (
+        <View style={{ height: StatusBar.currentHeight, backgroundColor: theme.colors.primaryDark }} />
+      )}
       <StatusBar backgroundColor={theme.colors.primaryDark} barStyle="light-content" />
-      <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
-        <Text style={styles.title}>
-          <Text style={{ color: theme.colors.primary }}>Histórico</Text>{" "}
-          <Text style={{ color: theme.colors.primaryDark }}>de Consultas</Text>
-        </Text>
 
-        {loading ? (
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-        ) : consultas.length === 0 ? (
-          <Text style={styles.emptyText}>Nenhuma consulta encontrada.</Text>
-        ) : (
-          <FlatList
-            data={consultas}
-            keyExtractor={(item) => String(item.id)}
-            renderItem={renderItem}
-            contentContainerStyle={{ paddingBottom: 8 }}
-            style={styles.list}
-          />
-        )}
+      <View style={styles.bg}>
+        <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
+          <Text style={styles.title}>
+            <Text style={{ color: theme.colors.primary }}>Histórico</Text>{" "}
+            <Text style={{ color: theme.colors.primaryDark }}>de Consultas</Text>
+          </Text>
 
-        <TouchableOpacity
-          style={styles.backBtn}
-          activeOpacity={0.8}
-          onPress={() => navigation.navigate('Home', { usuario })}
-        >
-          <Ionicons name="arrow-back" size={20} color={theme.colors.backBtn} style={{ marginRight: 5 }} />
-          <Text style={styles.backBtnText}>Voltar</Text>
-        </TouchableOpacity>
-      </Animated.View>
-    </View>
+          {loading ? (
+            <ActivityIndicator size="large" color={theme.colors.primary} />
+          ) : consultas.length === 0 ? (
+            <Text style={styles.emptyText}>Nenhuma consulta encontrada.</Text>
+          ) : (
+            <FlatList
+              data={consultas}
+              keyExtractor={(item) => String(item.id)}
+              renderItem={renderItem}
+              contentContainerStyle={{ paddingBottom: 8 }}
+              style={styles.list}
+            />
+          )}
+
+          <TouchableOpacity
+            style={styles.backBtn}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate('Home', { usuario })}
+          >
+            <Ionicons name="arrow-back" size={20} color={theme.colors.backBtn} style={{ marginRight: 5 }} />
+            <Text style={styles.backBtnText}>Voltar</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -194,7 +202,7 @@ const styles = StyleSheet.create({
     maxWidth: 410,
     backgroundColor: theme.colors.card,
     borderRadius: theme.radius.lg,
-    paddingVertical: 30,
+    paddingVertical: 25,
     paddingHorizontal: 19,
     elevation: 5,
     shadowColor: "#000",
@@ -202,7 +210,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     shadowRadius: 6,
     alignItems: "stretch",
-    marginVertical: 20,
+    marginVertical: 100,
     alignSelf: "center",
   },
   title: {
